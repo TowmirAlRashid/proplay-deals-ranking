@@ -7,7 +7,8 @@ const ZOHO = window.ZOHO;
 
 function App() {
   const [initialized, setInitialized] = useState(false) // initialize the webtab
-  const [targetDeals, setTargetDeals] = useState([])
+  const [targetDeals, setTargetDeals] = useState([]) // keeps the deals
+  const [pageSize, setPageSize] = useState(10)
 
   useEffect(() => {
     ZOHO.embeddedApp.on("PageLoad", function (data) { // initialize the app
@@ -50,6 +51,11 @@ function App() {
     fetchData();
   }, [initialized])
 
+  const formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  });
+
 
   const columns = [
     { 
@@ -60,11 +66,33 @@ function App() {
     {
       field: 'Deal_Name',
       headerName: 'Deal name',
+      renderCell: (params) => (
+        <Box>
+            <a 
+              href={`https://crm.zoho.com/crm/org651752009/tab/Potentials/${params.row.id}`} 
+              style={{ 
+                color: "#1976d2",
+                textDecoration: "none"
+              }}
+              target="_blank"
+              rel="noreferrer"
+              >
+                {params.value}
+            </a>
+        </Box>
+      ),
       flex: 3
     },
     {
       field: 'Amount',
       headerName: 'Amount',
+      renderCell: (params) => (
+        <Box>
+            <Typography sx={{ fontSize: "small" }}>
+                {formatter.format(params.value)}
+            </Typography>
+        </Box>
+      ),
       flex: 1.5
     },
     {
@@ -97,15 +125,15 @@ function App() {
       <Box
         sx={{
           width: "100%",
-          height: 371
+          height: 640
         }}
       >
         <DataGrid
           rows={targetDeals}
           columns={columns}
-          pageSize={5}
-          rowsPerPageOptions={[5]}
-          checkboxSelection
+          pageSize={pageSize}
+          onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+          rowsPerPageOptions={[5, 10]}
           disableSelectionOnClick
         />
       </Box>
